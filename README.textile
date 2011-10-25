@@ -1,0 +1,11 @@
+h1. Proteus
+
+- |ˈprōtēəs; ˈprōˌt(y)oōs| :=
+
+Greek Mythology a minor sea god (son of Oceanus and Tethys) who had the
+power of prophecy but who would assume different shapes to avoid answering
+questions.
+
+From the Greek protos "first." =:
+
+Declaratively define JavaScript objects and constructor functions, and the instances they produce (A.K.A. "Classes").

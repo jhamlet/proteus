@@ -1,5 +1,7 @@
 h1. Proteus
 
+p. Declaratively define JavaScript objects and constructor functions, and the instances they produce (A.K.A. "Classes").
+
 - |ˈprōtēəs; ˈprōˌt(y)oōs| :=
 
 Greek Mythology a minor sea god (son of Oceanus and Tethys) who had the
@@ -8,4 +10,3 @@ questions.
 
 From the Greek protos "first." =:
 
-Declaratively define JavaScript objects and constructor functions, and the instances they produce (A.K.A. "Classes").

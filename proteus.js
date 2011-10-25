@@ -4,7 +4,7 @@
     var _doNotInit  = {},
         OBJ         = Object,
         OBJ_PROTO   = OBJ.prototype,
-        hasOwn      = OBJ_PROTO.hasOwnProperty,
+        hasOwnProp  = OBJ_PROTO.hasOwnProperty,
         propertySpecKeys = [
             "value", "get", "set", "writable", "enumerable", "configurable"
         ],
@@ -29,7 +29,7 @@
      */
     function _merge (receiver /*, arg2..argN, overwrite */) {
         var len = arguments.length,
-            hasOwn = hasOwn,
+            hasOwn = hasOwnProperty,
             overwrite = true,
             supplier,
             i, prop
@@ -73,7 +73,7 @@
     function _isSpecLike (obj) {
         var list = propertySpecKeys,
             i = list.length,
-            hasOwn = hasOwn,
+            hasOwn = hasOwnProperty,
             count = 0
         ;
         
@@ -112,7 +112,7 @@
     }
     
     function _specify (obj) {
-        var hasOwn = hasOwn,
+        var hasOwn = hasOwnProperty,
             key, args;
         
         for (key in obj) {
@@ -158,8 +158,24 @@
         get klass () {
         },
         
-        property: function () {
-            console.log("Make property");
+        property: function (prop) {
+            var arglen = arguments.length,
+                spec = _spec(),
+                val;
+            
+            if (arglen === 2) {
+                val = arguments[1];
+                if (_isSpecLike(val)) {
+                    spec = val;
+                    val = null;
+                }
+            }
+            else if (arglen === 1) {
+                spec = _spec();
+            }
+            
+            console.log("define property: " + prop, spec);
+            _defineProperty(this.proto, prop, spec);
         },
         
         method: function () {

@@ -231,6 +231,7 @@
             
             Ctor.constructor = Ctor;
             Ctor.extend = this.extend;
+            
             return _createClass(Ctor, fn);
         },
         
@@ -253,5 +254,5 @@
         }
     });
 }(
-    exports ? exports : (window.Protues = {})
+    exports ? exports : (window.Proteus = {})
 ));

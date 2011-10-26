@@ -11,14 +11,71 @@ module.exports = {
     },
     
     "Simple Object creation": function () {
-        var obj = Proteus.create({
-            property: ["foo", {}, {configurable: false}],
-            property: ["bag", {value: {}}],
-            method: ["baz", function () {}],
-            getter: ["color"],
-            setter: ["hair"],
-            getset: ["hat"]
+        var tmp = {},
+                obj = Proteus.create(function () {
+                this.property("foo", 42);
+                this.property("tmp", tmp, {enumerable: false});
+            })
+        ;
+        
+        should.exist(obj);
+        obj.should.have.ownProperty("foo");
+        obj.foo.should.eql(42);
+        obj.tmp.should.eql(tmp);
+    },
+    
+    "Create methods": function () {
+        var obj = Proteus.create(function () {
+            this.method("foo", function () {
+                return "foo";
+            });
+            
+            this.method("baz", function () {
+                return "baz";
+            }, {
+                enumerable: false
+            });
         });
         
-    }
-}
+        obj.foo.should.be.a("function");
+        obj.baz.should.be.a("function");
+        
+        Object.getOwnPropertyDescriptor(obj, "baz").enumerable.should.eql(false);
+    },
+    
+    "Create getters": function () {
+        var obj = Proteus.create(function () {
+
+            this.getter("foo", function () {
+                return "foo";
+            });
+
+        });
+        
+        obj.foo.should.eql("foo");
+        Object.getOwnPropertyDescriptor(obj, "foo").get.should.be.a("function");
+    },
+    
+    "Create setters": function () {
+        var obj = Proteus.create(function () {
+            
+            this.getter("foo", function () { return this._foo; })
+            this.setter("foo", function (v) { this._foo = v; });
+            
+            this.getter("baz", function () { return this._baz; });
+            this.setter("baz", {set: function (v) { this._baz = v; }});
+        });
+        
+        Object.getOwnPropertyDescriptor(obj, "foo").get.should.be.a("function");
+        Object.getOwnPropertyDescriptor(obj, "foo").set.should.be.a("function");
+
+        Object.getOwnPropertyDescriptor(obj, "baz").get.should.be.a("function");
+        Object.getOwnPropertyDescriptor(obj, "baz").set.should.be.a("function");
+        
+        obj.foo = 5;
+        obj.foo.should.eql(5);
+        
+        obj.baz = 10;
+        obj.baz.should.eql(10);
+    },
+};

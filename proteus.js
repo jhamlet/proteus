@@ -2,18 +2,18 @@
 (function (exports) {
     
     var _doNotInit  = {},
-        OBJ         = Object,
-        OBJ_PROTO   = OBJ.prototype,
-        hasOwnProp  = OBJ_PROTO.hasOwnProperty,
+        O           = Object,
+        OP          = O.prototype,
+        hasOwnProp  = OP.hasOwnProperty,
         propertySpecKeys = [
             "value", "get", "set", "writable", "enumerable", "configurable"
         ],
-        plainSpec   = {
+        openSpec   = {
             enumerable: true,
-            writable: true,
             configurable: true
         },
-        Maker
+        propertySpec,
+        Proteus
     ;
     
     function _slice () {
@@ -29,7 +29,7 @@
      */
     function _merge (receiver /*, arg2..argN, overwrite */) {
         var len = arguments.length,
-            hasOwn = hasOwnProperty,
+            hasOwn = hasOwnProp,
             overwrite = true,
             supplier,
             i, prop
@@ -55,7 +55,7 @@
     }
     
     function _augment (r, s) {
-        var O = OBJ,
+        var O = O,
             p, len, i
         ;
         
@@ -73,7 +73,7 @@
     function _isSpecLike (obj) {
         var list = propertySpecKeys,
             i = list.length,
-            hasOwn = hasOwnProperty,
+            hasOwn = hasOwnProp,
             count = 0
         ;
         
@@ -93,118 +93,112 @@
         return count;
     }
     
-    function _spec (obj) {
-        return _merge({}, plainSpec, obj);
-    }
-    
     function _defineProperty (obj, name, spec) {
-        OBJ.defineProperty(obj, name, _spec(spec));
+        O.defineProperty(obj, name, spec);
     }
         
-    function _resetMaker () {
-        delete Maker.klass;
-        delete Maker.proto;
-        delete Maker._super;
-    }
-    
-    function _compose (fn) {
-        fn.call(Maker, Maker);
-    }
-    
-    function _specify (obj) {
-        var hasOwn = hasOwnProperty,
-            key, args;
-        
-        for (key in obj) {
-            if (hasOwn.call(obj, key)) {
-                Maker[key].apply(Maker, obj[key]);
-            }
-        }
-    }
     /**
      * 
-     * @param obj {obje} description
+     * @param proto {obj} description
      * @param fn {type} description
      * @returns {type}
      */
-    function _createObj (obj, fn) {
-        var twoargs = arguments.length === 2;
+    function _createObj (proto, fn) {
+        var obj, P;
         
-        _resetMaker();
-        
-        if (twoargs) {
-            Maker.proto = OBJ.create(obj);
-            if (typeof fn === "function") {
-                _compose(fn);
-            }
-            else {
-                _specify(obj);
-            }
-        }
-        else {
-            Maker.proto = OBJ.create(OBJ_PROTO);
-            if (typeof obj === "function") {
-                _compose(fn);
-            }
-            else {
-                _specify(obj);
-            }
+        if (!fn) {
+            fn = obj;
+            obj = OP;
         }
         
-        return Maker.proto;
+        obj = O.create(OP);
+        P = O.create(Proteus, {
+            proto: {value: obj},
+            _super: {value: O.create(proto)}
+        });
+
+        fn.call(P, P.meta, P._super);
+
+        return obj;
     }
+
+    propertySpec = _merge({writable: true}, openSpec);
     
-    Maker = {
-        get klass () {
-        },
-        
-        property: function (prop) {
-            var arglen = arguments.length,
-                spec = _spec(),
-                val;
-            
-            if (arglen === 2) {
-                val = arguments[1];
-                if (_isSpecLike(val)) {
-                    spec = val;
-                    val = null;
-                }
-            }
-            else if (arglen === 1) {
-                spec = _spec();
-            }
-            
-            console.log("define property: " + prop, spec);
-            _defineProperty(this.proto, prop, spec);
-        },
-        
-        method: function () {
-            console.log("Make method");
-        },
-        
-        getter: function () {
-            console.log("Make getter");
-        },
-        
-        setter: function () {
-            console.log("Make setter");
-        },
-        
-        getset: function () {
-            console.log("Make getter & setter");
+    function _property (obj, name, val, spec) {
+        if (!spec && !val instanceof Array &&
+            typeof val === "object" && _isSpecLike(val)
+        ) {
+            spec = val;
+            val = undefined;
         }
-    };
-    
+        _defineProperty(
+            obj,
+            name,
+            _merge({value: val}, propertySpec, spec)
+        );
+    }
+
+    function _method (obj, name, fn, spec) {
+        spec = typeof fn !== "function" ? fn : spec;
+        _defineProperty(obj, name, _merge({value: fn}, openSpec, spec));
+    }
+        
+    function _getter (obj, name, fn, spec) {
+        spec = typeof fn !== "function" ? fn : spec;
+        _defineProperty(
+            obj,
+            name,
+            _merge({get: fn}, openSpec, spec)
+        );
+    }
+        
+    function _setter (obj, name, fn, spec) {
+            spec = typeof fn !== "function" ? fn : spec;
+            _defineProperty(
+                obj,
+                name,
+                _merge({set: fn}, openSpec, spec)
+            );
+    }
+        
+    function _getset () {
+        var len = arguments.length,
+            name = arguments[1],
+            getter, setter, spec
+        ;
+            
+        switch (len) {
+            case 4:
+                getter = arguments[2];
+                setter = arguments[3];
+                spec = arguments[4];
+                break;
+            case 3:
+                getter = setter = arguments[2];
+                spec = arguments[3];
+                break;
+            case 2:
+                spec = arguments[2];
+                break;
+        }
+        
+        spec = _merge(
+            getter || setter ? {get: getter, set: setter} : {},
+            openSpec,
+            spec
+        );
+
+        _defineProperty(arguments[0], name, spec);
+    }
+        
     _merge(exports, {
-        create: function (obj, fn) {
-            return _createObj(obj, fn);
-        },
+        create: _createObj,
         
         define: function () {
             
         },
         
-        extend: function () {
+        extend: function (obj, fn) {
             
         }
     });

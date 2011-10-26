@@ -55,8 +55,7 @@
     }
     
     function _augment (r, s) {
-        var O = O,
-            p, len, i
+        var p, len, i
         ;
         
         p = O.getOwnPropertyNames(s);
@@ -96,110 +95,161 @@
     function _defineProperty (obj, name, spec) {
         O.defineProperty(obj, name, spec);
     }
+    
+    propertySpec = _merge({writable: true}, openSpec);
+    
+    function _makeAccessor (obj, props) {
+        var accessor = {
+            extend: function (obj) {
+                
+            },
+            
+            property: function (name, val, spec) {
+                if (!spec && !val instanceof Array &&
+                    typeof val === "object" && _isSpecLike(val)
+                ) {
+                    spec = val;
+                    val = undefined;
+                }
+                _defineProperty(
+                    obj,
+                    name,
+                    _merge({value: val}, propertySpec, spec)
+                );
+            },
+
+            method: function (name, fn, spec) {
+                spec = typeof fn !== "function" ? fn : spec;
+                _defineProperty(obj, name, _merge({value: fn}, openSpec, spec));
+            },
+
+            getter: function (name, fn, spec) {
+                spec = typeof fn !== "function" ? fn : spec;
+                _defineProperty(
+                    obj,
+                    name,
+                    _merge({get: fn}, openSpec, spec)
+                );
+            },
+
+            setter: function (name, fn, spec) {
+                    spec = typeof fn !== "function" ? fn : spec;
+                    _defineProperty(
+                        obj,
+                        name,
+                        _merge({set: fn}, openSpec, spec)
+                    );
+            },
+
+            getset: function () {
+                var len = arguments.length,
+                    name = arguments[0],
+                    getter, setter, spec
+                ;
+
+                switch (len) {
+                    case 4:
+                        getter = arguments[1];
+                        setter = arguments[2];
+                        spec = arguments[3];
+                        break;
+                    case 3:
+                        getter = setter = arguments[1];
+                        spec = arguments[2];
+                        break;
+                    case 2:
+                        spec = arguments[1];
+                        break;
+                }
+
+                spec = _merge(
+                    getter || setter ? {get: getter, set: setter} : {},
+                    openSpec,
+                    spec
+                );
+
+                _defineProperty(name, spec);
+            }
+        };
         
+        if (props) {
+            _augment(accessor, props);
+        }
+        
+        return accessor;
+    }
     /**
      * 
      * @param proto {obj} description
      * @param fn {type} description
      * @returns {type}
      */
-    function _createObj (proto, fn) {
-        var obj, P;
+    function _createObject (proto, fn) {
+        var obj, meta, P;
         
         if (!fn) {
-            fn = obj;
-            obj = OP;
+            fn = proto;
+            proto = OP;
         }
         
-        obj = O.create(OP);
-        P = O.create(Proteus, {
-            proto: {value: obj},
-            _super: {value: O.create(proto)}
-        });
+        meta = _makeAccessor(proto);
+        
+        obj = O.create(proto);
+        P = _makeAccessor(obj, O.create(OP, {
+            meta: {
+                get: function () {
+                    return meta;
+                }
+            }
+        }));
 
-        fn.call(P, P.meta, P._super);
+        fn.call(P, meta, obj, proto);
 
         return obj;
     }
 
-    propertySpec = _merge({writable: true}, openSpec);
-    
-    function _property (obj, name, val, spec) {
-        if (!spec && !val instanceof Array &&
-            typeof val === "object" && _isSpecLike(val)
-        ) {
-            spec = val;
-            val = undefined;
-        }
-        _defineProperty(
-            obj,
-            name,
-            _merge({value: val}, propertySpec, spec)
-        );
-    }
-
-    function _method (obj, name, fn, spec) {
-        spec = typeof fn !== "function" ? fn : spec;
-        _defineProperty(obj, name, _merge({value: fn}, openSpec, spec));
-    }
-        
-    function _getter (obj, name, fn, spec) {
-        spec = typeof fn !== "function" ? fn : spec;
-        _defineProperty(
-            obj,
-            name,
-            _merge({get: fn}, openSpec, spec)
-        );
-    }
-        
-    function _setter (obj, name, fn, spec) {
-            spec = typeof fn !== "function" ? fn : spec;
-            _defineProperty(
-                obj,
-                name,
-                _merge({set: fn}, openSpec, spec)
-            );
-    }
-        
-    function _getset () {
-        var len = arguments.length,
-            name = arguments[1],
-            getter, setter, spec
-        ;
-            
-        switch (len) {
-            case 4:
-                getter = arguments[2];
-                setter = arguments[3];
-                spec = arguments[4];
-                break;
-            case 3:
-                getter = setter = arguments[2];
-                spec = arguments[3];
-                break;
-            case 2:
-                spec = arguments[2];
-                break;
-        }
-        
-        spec = _merge(
-            getter || setter ? {get: getter, set: setter} : {},
-            openSpec,
-            spec
-        );
-
-        _defineProperty(arguments[0], name, spec);
-    }
-        
     _merge(exports, {
-        create: _createObj,
+        create: _createObject,
         
-        define: function () {
+        define: function (fn) {
+            var Ctor = function () {
+                    var initialize = arguments[0] !== _doNotInit,
+                        init = this.init
+                    ;
+                    
+                    if (initialize) {
+                        if (init) {
+                            init.apply(this, arguments);
+                        }
+                        
+                        if (Ctor.initialize) {
+                            Ctor.initialize.call(Ctor, arguments);
+                        }
+                    }
+                }
+            ;
             
+            Ctor.constructor = Ctor;
+            Ctor.extend = this.extend;
+            return _createClass(Ctor, fn);
         },
         
         extend: function (obj, fn) {
+            var Ctor, proto;
             
+            if (arguments.length === 2 && typeof obj === "function") {
+                // constructor
+                return _createClass(new obj(_doNotInit), fn);
+            }
+            else if (arguments.length === 1 && typeof this === "function") {
+                return _createClass(new this(_doNotInit), fn);
+            }
+            else if (arguments.length === 1 && typeof obj === "function") {
+                // extend an object of Object.prototype
+                return _createObject(fn);
+            }
+            
+            return _createObject(obj, fn);
         }
     });
 }(

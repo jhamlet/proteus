@@ -51,7 +51,7 @@
     }
     
     /**
-     * Determines if an object looks like a object property specifier.
+     * Determines if an object looks like an object property specifier.
      * Returns true if the object contains "enumerable", "writable", or 
      * "configurable", otherwise returns the number of properties in 
      * object that look like property specificier properties ("value", "get",
@@ -84,9 +84,10 @@
     }
     
     /**
-     * Extend an object with additional properties. If the value of a property
-     * looks like an object property specifier, use Object.defineProperty to 
-     * define the property on object, otherwise just copy it over.
+     * Extend an object with additional properties.  If the value of a
+     * property looks like an object property specifier, use
+     * Object.defineProperty to define the property on object, otherwise
+     * just copy it over.
      * @param obj {object} object to extend
      * @param props {object} properties to extend
      * @returns {type}
@@ -396,7 +397,6 @@
         getter:             _getter,
         setter:             _setter,
         getset:             _getset
-        
     });
 }(
     exports ? exports : (window.Proteus = {})

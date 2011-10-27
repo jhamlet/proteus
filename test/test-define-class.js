@@ -5,7 +5,7 @@ var should = require("should"),
     SubClass
 ;
 
-BaseClass = Proteus.define(function (meta, proto, _super) {
+BaseClass = Proteus.define(function (proto, meta, _super) {
     
     this.method("foo", function () {
         return "foo";
@@ -13,7 +13,7 @@ BaseClass = Proteus.define(function (meta, proto, _super) {
     
 });
 
-SubClass = BaseClass.extend(function (meta, proto, _super) {
+SubClass = BaseClass.extend(function (proto, meta, _super) {
     
     this.method("foo", function () {
         return "foo " + _super.foo.call(this);
@@ -32,7 +32,6 @@ module.exports = {
     
     "Super methods work": function () {
         var inst = new SubClass();
-        // console.log(SubClass.prototype);
         inst.foo().should.eql("foo foo");
     }
 }

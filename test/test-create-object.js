@@ -164,7 +164,7 @@ module.exports = {
             
         });
         
-        objB = Proteus.create(objA, function (meta, proto, _super) {
+        objB = Proteus.create(objA, function (proto, _super) {
             
             this.property("id", "obj B");
             

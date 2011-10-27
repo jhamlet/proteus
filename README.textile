@@ -1,6 +1,6 @@
 h1. Proteus
 
-p. Declaratively define JavaScript objects and constructor functions, and the instances they produce (A.K.A. "Classes").
+p. Declaratively define JavaScript objects and constructor functions (A.K.A. "Classes"), and the instances they produce.
 
 - ˈprōtēəs; ˈprōˌt(y)oōs :=
 

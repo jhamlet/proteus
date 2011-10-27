@@ -193,7 +193,7 @@
     function extend (proto, fn) {
         var meta    = wrap(proto),
             isCtor  = typeof proto === "function",
-            obj     = isCtor ? proto : O.create(proto),
+            obj     = isCtor ? new proto(_doNotInit) : O.create(proto),
             Proteus
         ;
         
@@ -206,32 +206,35 @@
             _super: {
                 get: isCtor ?
                     function () {
-                        return obj.prototype;
+                        return proto.prototype;
                     } :
                     function () {
-                        return obj;
+                        return proto;
                     }
             }
         });
         
-        fn.call(Proteus, meta, Proteus, isCtor ? obj.prototype : proto);
+        fn.call(Proteus, meta, Proteus, Proteus._super);
         
-        return obj;
+        return isCtor ? proto : obj;
     }
     
     function _extend (proto, fn) {
-        var obj, ret;
+        var obj, ret, isCtor;
         
         if (arguments.length === 2 && typeof proto === "function") {
             // constructor
-            obj = new obj(_doNotInit);
+            obj = proto;
+            isCtor = true;
         }
         else if (arguments.length === 1 && typeof this === "function") {
-            proto = this;
-            obj = new this(_doNotInit);
+            obj = this;
+            fn = proto;
+            isCtor = true;
         }
         else if (arguments.length === 1 && typeof proto === "function") {
             // extend an object of Object.prototype
+            fn = proto;
             obj = OP;
         }
         else {
@@ -240,10 +243,16 @@
 
         ret = extend(obj, fn);
         
+        if (isCtor) {
+            ret.prototype = ret;
+            ret.constructor = proto;
+            ret.extend = _extend;
+        }
+        
         if (obj !== OP && proto.extended) {
             proto.extended(obj);
         }
-        
+
         return ret;
     }
 

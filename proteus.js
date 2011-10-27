@@ -17,6 +17,7 @@
     ;
     
     /**
+     * Merge two or more objects properties into the first.
      * @param receiver {object}
      * @param arg2..argN-1 {object} list of suppliers
      * @param argN {boolean} optional, overwrite, defaults to true
@@ -49,6 +50,16 @@
         return receiver;
     }
     
+    /**
+     * Determines if an object looks like a object property specifier.
+     * Returns true if the object contains "enumerable", "writable", or 
+     * "configurable", otherwise returns the number of properties in 
+     * object that look like property specificier properties ("value", "get",
+     * or "set")
+     * 
+     * @param obj {object}
+     * @returns {boolean|integer}
+     */
     function isSpecLike (obj) {
         var list = propertySpecKeys,
             i = list.length,
@@ -72,15 +83,15 @@
         return count;
     }
     
-    function defineProperty (obj, name, spec) {
-        O.defineProperty(obj, name, spec);
-    }
-    
-    function defineProperties (obj, spec) {
-        O.defineProperties(obj, spec);
-    }
-    
-    function _extend (subject, props) {
+    /**
+     * Extend an object with additional properties. If the value of a property
+     * looks like an object property specifier, use Object.defineProperty to 
+     * define the property on object, otherwise just copy it over.
+     * @param obj {object} object to extend
+     * @param props {object} properties to extend
+     * @returns {type}
+     */
+    function _extend (obj, props) {
         var specLike = isSpecLike, // reduce scope lookup
             key, val
         ;
@@ -91,17 +102,29 @@
                 typeof val === "object" &&
                 specLike(val)
             ) {
-                defineProperty(subject, key, val);
+                O.defineProperty(obj, key, val);
             }
             else {
-                subject[key] = props[key];
+                obj[key] = props[key];
             }
         }
+        
+        return this;
     }
     
+    /**
+     * A object property specifier for plain (non-function) properties
+     */
     propertySpec = merge({writable: true}, openSpec);
 
-    function _property (subject, name, val, spec) {
+    /**
+     * Define a property on an object.
+     * @param obj {object} object to add the property to
+     * @param name {string} name of the property
+     * @param val {mixed} optional, value to apply to the property
+     * @param spec {object} optional, object specifier for property
+     */
+    function _property (obj, name, val, spec) {
         if (!spec && !val instanceof Array &&
             typeof val === "object" && isSpecLike(val)
         ) {
@@ -109,39 +132,74 @@
             val = undefined;
         }
 
-        defineProperty(
-            subject,
+        O.defineProperty(
+            obj,
             name,
             merge({value: val}, propertySpec, spec)
         );
+        
+        return this;
     }
 
-    function _method (subject, name, fn, spec) {
+    /**
+     * Define a method on an object
+     * @param obj {object} object to add the property to
+     * @param name {string} name of the property
+     * @param fn {function} optional
+     * @param spec {object} optional, object specifier for property
+     */
+    function _method (obj, name, fn, spec) {
         spec = !fn.constructor ? fn : spec;
-        defineProperty(subject, name, merge({value: fn}, openSpec, spec));
+        O.defineProperty(obj, name, merge({value: fn}, openSpec, spec));
+        return this;
     }
 
-    function _getter (subject, name, fn, spec) {
+    /**
+     * Define a getter on an object
+     * @param obj {object} object to add the property to
+     * @param name {string} name of the property
+     * @param fn {function} optional
+     * @param spec {object} optional, object specifier for property
+     */
+    function _getter (obj, name, fn, spec) {
         spec = !fn.constructor ? fn : spec;
-        defineProperty(
-            subject,
+        O.defineProperty(
+            obj,
             name,
             merge({get: fn}, openSpec, spec)
         );
+        return this;
     }
 
-    function _setter (subject, name, fn, spec) {
-            spec = fn.constructor ? fn : spec;
-            defineProperty(
-                subject,
-                name,
-                merge({set: fn}, openSpec, spec)
-            );
+    /**
+     * Define a setter on an object
+     * @param obj {object} object to add the property to
+     * @param name {string} name of the property
+     * @param fn {function} optional
+     * @param spec {object} optional, object specifier for property
+     */
+    function _setter (obj, name, fn, spec) {
+        spec = fn.constructor ? fn : spec;
+        O.defineProperty(
+            obj,
+            name,
+            merge({set: fn}, openSpec, spec)
+        );
+        return this;
     }
 
-    function _getset (/*subject, name, get, set, spec*/) {
+    /**
+     * Define a geter/setter pain on an object
+     * @param obj {object} object to add the property to
+     * @param name {string} name of the property
+     * @param get {function} optional, function to use for getter
+     * @param set {function} optional, if not supplied and 'get' is, use
+     *      'get' argument for both getter and setter
+     * @param spec {object} optional, object specifier for property
+     */
+    function _getset (/*obj, name, get, set, spec*/) {
         var len     = arguments.length,
-            subject = arguments[0],
+            obj = arguments[0],
             name    = arguments[1],
             getter, setter, spec
         ;
@@ -178,68 +236,100 @@
             spec
         );
     
-        defineProperty(subject, name, spec);
+        O.defineProperty(obj, name, spec);
+        
+        return this;
     }
     
-    function wrap (subject, parent) {
+    /**
+     * 
+     * @param obj {object} object to wrap
+     * @param parent {object} 'super' to obj
+     * @returns {object} the wrapper
+     */
+    function wrap (obj, parent) {
         var wrapper = {
             
             get _super () {
                 return parent;
             },
             
-            extend:   _extend.bind(wrapper, subject),
+            extend:   _extend.bind(wrapper, obj),
         
-            property: _property.bind(wrapper, subject),
+            property: _property.bind(wrapper, obj),
             
-            method:   _method.bind(wrapper, subject),
+            method:   _method.bind(wrapper, obj),
                       
-            getter:   _getter.bind(wrapper, subject),
+            getter:   _getter.bind(wrapper, obj),
                       
-            setter:   _setter.bind(wrapper, subject),
+            setter:   _setter.bind(wrapper, obj),
                       
-            getset:   _getset.bind(wrapper, subject)
+            getset:   _getset.bind(wrapper, obj)
         };
         
         return wrapper;
     }
     
+    /**
+     * 
+     * @param proto {object} optional, object to use as the prototype,
+     *      defaults to Object.prototype
+     * @param fn {function} function to use to extend the new object
+     * @returns {object} the new object
+     */
     function _createObject (proto, fn) {
-        var subject, wrapper;
+        var obj, wrapper;
         
         if (!fn) {
             fn = proto;
             proto = OP;
         }
         
-        subject = O.create(proto);
-        wrapper = wrap(subject, proto);
+        obj = O.create(proto);
+        wrapper = wrap(obj, proto);
         fn.call(wrapper, wrapper, proto);
         
-        return subject;
+        return obj;
     }
     
+    /**
+     * Utility to return a new constructor function
+     * @returns {function} the constructor function
+     */
     function _constructor () {
-        return function Proteus () {
-            var initialize = arguments[0] !== _doNotInit,
-                fn = this.init;
+        var Ctor = function Proteus () {
+            var initialize = arguments[0] !== _doNotInit;
                 
-            if (initialize && fn) {
-                fn.apply(this, arguments);
+            if (initialize) {
+                if (Ctor.initialize) {
+                    Ctor.initialize(this, arguments);
+                }
+                
+                if (this.init) {
+                    this.init.apply(this, arguments);
+                }
             }
         };
+        
+        return Ctor;
     }
     
+    /**
+     * Extend an existing class with additional functionality
+     * @param baseKlass {function} class to extend
+     * @param fn {function} function used to extend the class
+     * @returns {function} the new constructor function
+     */
     function _extendClass (baseKlass, fn) {
         var klass   = _constructor(),
-            subject = new baseKlass(_doNotInit),
+            obj     = new baseKlass(_doNotInit),
             meta    = wrap(klass),
-            wrapper = wrap(subject, baseKlass.prototype)
+            wrapper = wrap(obj, baseKlass.prototype)
         ;
         
-        klass.prototype = subject;
-        klass.constructor = klass;
-        klass.extend = _extendClass.bind(klass, klass);
+        klass.prototype     = obj;
+        klass.constructor   = klass;
+        klass.extend        = _extendClass.bind(klass, klass);
         
         wrapper.__defineGetter__("meta", function () {
             return meta;
@@ -247,9 +337,20 @@
         
         fn.call(wrapper, wrapper, meta, baseKlass.prototype);
         
+        if (baseKlass.extended) {
+            baseKlass.extended(klass);
+        }
+        
         return klass;
     }
     
+    /**
+     * Create a constructor function with the optional prototype
+     * @param proto {object} optional, prototype for the class, defaults to
+     *      Object.prototype
+     * @param fn {function} function used to extend the class
+     * @returns {function} the new constructor function
+     */
     function _createClass (proto, fn) {
         var klass   = _constructor(),
             meta    = wrap(klass),
@@ -261,9 +362,9 @@
             proto = OP;
         }
         
-        klass.prototype = proto;
-        klass.constructor = klass;
-        klass.extend = _extendClass.bind(klass, klass);
+        klass.prototype     = proto;
+        klass.constructor   = klass;
+        klass.extend        = _extendClass.bind(klass, klass);
         
         wrapper = wrap(proto, null);
         wrapper.__defineGetter__("meta", function () {
@@ -275,12 +376,27 @@
         return klass;
     }
     
+    /**
+     * Export our Proteus library
+     */
     merge(exports, {
+        // Create a new object
         create: _createObject,
-        
+        // Create a new class
         define: _createClass,
+        // Extend an existing class
+        extend: _extendClass,
+
+        // Provide utility methods for defining properties on objects
+        defineProperty:     O.defineProperty.bind(O),
+        defineProperties:   O.defineProperties.bind(O),
+        augment:            _extend,
+        property:           _property,
+        methpd:             _method,
+        getter:             _getter,
+        setter:             _setter,
+        getset:             _getset
         
-        extend: _extendClass
     });
 }(
     exports ? exports : (window.Proteus = {})

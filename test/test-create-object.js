@@ -1,6 +1,6 @@
 
 var should = require("should"),
-    Proteus = require("proteus")
+    Proteus = require("lib/proteus")
 ;
 
 module.exports = {

@@ -1,4 +1,2 @@
 
-2011-10-27@16:00 - Remove some of the duplication that _extendClass and _createClass have
 2011-10-27@16:03 - Add more tests.
-2011-10-28@08:36 - make faster. Wrapping and using functions to create properties is really slow (by about 40 times). Revisit framework premis.

@@ -1,37 +1,33 @@
 
 var should = require("should"),
-    Proteus = require("lib/proteus"),
-    BaseClass,
-    SubClass
+    Proteus = require("lib/proteus")
 ;
-
-BaseClass = Proteus.define(function (proto, meta, _super) {
-    
-    this.method("foo", function () {
-        return "foo";
-    });
-    
-});
-
-SubClass = BaseClass.extend(function (proto, meta, _super) {
-    
-    this.method("foo", function () {
-        return "foo " + _super.foo.call(this);
-    });
-    
-});
 
 module.exports = {
     "Exists": function () {
-        should.exist(BaseClass);
-        should.exist(SubClass);
-        
-        BaseClass.should.be.a("function");
-        SubClass.should.be.a("function");
+        should.exist(Proteus);
+        Proteus.Class.should.be.a("function");
+        Proteus.Class.derive.should.be.a("function");
     },
     
-    "Super methods work": function () {
-        var inst = new SubClass();
-        inst.foo().should.eql("foo foo");
+    "Create Class": function () {
+        var BaseClass = Proteus.Class.derive({
+            foo: "foo"
+        });
+        
+        var instance = new BaseClass();
+        
+        BaseClass.__super__.should.eql(Proteus.Class.prototype);
+        
+        instance.foo.should.eql("foo");
+    },
+    
+    "Instance of": function () {
+        var BaseClass = Proteus.Class.derive();
+        var SubClass = BaseClass.derive();
+        var instance = new SubClass();
+        
+        instance.should.be.an.instanceof(SubClass);
+        instance.should.be.an.instanceof(BaseClass);
     }
 }

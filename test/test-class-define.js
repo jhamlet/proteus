@@ -30,4 +30,4 @@ module.exports = {
         instance.should.be.an.instanceof(SubClass);
         instance.should.be.an.instanceof(BaseClass);
     }
-}
+};

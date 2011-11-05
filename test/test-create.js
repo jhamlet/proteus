@@ -57,10 +57,13 @@ module.exports = {
         objB = Proteus.create(objA, {
             init: function () {
                 this.objB = true;
+                Proteus.callProto(this, "init");
             },
             
             fuz: "fuz"
         });
+        
+        objB.init();
         
         objB.foo.should.eql("foo");
         objB.fuz.should.eql("fuz");
@@ -74,8 +77,11 @@ module.exports = {
         objC = Proteus.create(objB, {
             init: function () {
                 this.objC = true;
+                Proteus.callProto(this, "init");
             }
         });
+        
+        objC.init();
         
         objC.objA.should.eql(true);
         objC.objB.should.eql(true);

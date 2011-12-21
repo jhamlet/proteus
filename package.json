@@ -1,8 +1,8 @@
 {   
     "name": "proteus",
     "description": "A declarative way of creating objects and classes in JavaScript",
-    "version": "0.0.8",
-    "keywords": ["ooo", "class", "object"],
+    "version": "0.0.9",
+    "keywords": ["ooo", "class", "object", "properties", "utility"],
     "main": "./lib/proteus.js",
     "devDependencies": {
         "expresso": ">=0.9.2",

@@ -11,6 +11,9 @@ Declaratively define JavaScript objects and constructor functions (A.K.A. "Class
 
 >   From the Greek protos "first."
 
+Overview
+--------
+
 
 Object Creation and Extension Methods
 -------------------------------------
@@ -38,6 +41,17 @@ Proteus.defineProperty(
 
 Define multiple properties.
 
+~~~js
+Proteus.defineProperties(obj, [
+    [obj, "propName", 42],
+    [obj, "methodName", function () {
+        /*...*/
+    }, {
+        enumerable: false
+    }]
+]);
+~~~
+
 ### Proteus.defineGetter(obj, name, fn, [spec])
 
 Utility method for creating a getter on an object. The property definition will default to {enumerable: true, configurable: true} unless overridden with the spec object.
@@ -54,11 +68,11 @@ if `setter` is not given, then the `getter` function will be used for both getti
 
 ### Proteus.getPropertyNames(obj)
 
-Get all property names for an object, all the way up the prototyep chain.
+Get all property names for an object, all the way up the prototype chain.
 
 ### Proteus.getPropertyDescriptor(obj, name)
 
-Get a property descriptor for an object whereever it may exist in the prototype chain.
+Get a property descriptor for an object where ever it may exist in the prototype chain.
 
 ### Proteus.copyOwnProperties(hidden = false, overwrite = true, supplier, receiver)
 
@@ -80,21 +94,22 @@ Copy all properties from `supplier` to `receiver`, but do not overwrite existing
 
 Merge *enumerable* properties from all objects passed as arguments onto `receiver`.
 
-### Proteus.mergeAll
+### Proteus.mergeAll(receiver, arg1, ..., argN)
 
 Merge all properties from all objects passed as arguments onto `reciever`.
 
-### Proteus.apply
+### Proteus.apply(receiver, arg1, ..., argN)
 
 Merge *enumerable* properties from all objects passed as arguments onto `receiver`, only if they do not exist on `receiver`.
 
-### Proteus.applyAll
+### Proteus.applyAll(receiver, arg1, ..., argN)
 
 Merge all properties from all objects passed as arguments onto `receiver`, only if they do not exist on `receiver`.
 
 Proteus Utility Methods
 -----------------------
 
+<!--
 ### Proteus.extend(extendee, extender1, ..., extenderN)
 
 Extend one object with the properties of another.
@@ -103,7 +118,7 @@ If the extending object (`extender1, ..., extenderN`) has a function named `exte
 
 ### Proteus.include(self, obj1, ..., objN)
 
-Include properties onto the prototype of 'self' from a *Constructor* function or a plain object. If `obj` has a property named `self`, the properties of `self` will be merged into the passed 'self'.
+Include properties onto the prototype of 'self' from a *Constructor* function's prototype, or a plain object. If `obj` has a property named `self`, the properties of `self` will be merged into the passed 'self'.
 
 If the supplying object, `obj`, has a function named `included` it will be called with one argument, the 'self' object that was just modified.
 
@@ -112,6 +127,7 @@ If the supplying object, `obj`, has a function named `included` it will be calle
 Derive a new *Constructor* function from another, optionally adding the supplied properties to its prototype.
 
 If the parent *Constructor* has a function named `inherited` it will be called with one argument, the new *Constructor* function.
+-->
 
 ### Proteus.slice(list, offset = 0, end = list.length)
 
@@ -129,7 +145,7 @@ Delegate a function call to another object. Additional arguments will be *prepen
 
 Apply a method from the `self` object's prototype chain.
 
-The `name` argument is optional if the function you are invoking from, and the one up the prototype chain you wish to invoke is named. i.e:
+The `name` argument is optional if the function you are invoking from, and the one up the prototype chain you wish to invoke is named. e.g:
 
 ~~~js
 var Proteus = require("proteus"),
@@ -161,4 +177,138 @@ Call a method `name` from the `self` object's prototype chain passing the remain
 
 Proteus.Class
 -------------
+
+`Proteus.Class` starts off the Proteus inheritance chain (itself is a descendent of `Object`). From there you can derive new classes from `Proteus.Class` (or any classes that are derived from `Proteus.Class`) to develop your class hierarchy.
+
+~~~js
+var MyClass = Proteus.Class.derive({
+        // props for MyClass
+    }),
+    MySubClass = MyClass.derive({
+        // props for MySubClass
+    })
+;
+~~~
+
+### Deriving Inheritance
+
+**_ProteusClass_.derive(props)**
+
+As shown above, use the static methods on the core `Proteus.Class`, or the *Constructor* functions returned by `derive`, to derive new subclasses.
+
+In addition, `Proteus` allows you to define static properties on your subclass' *Constructor* function. Simply provide a property `self` in the passed properties for your class, and those will be copied to the *Constructor* function instead of the *Constructor's prototype*.
+
+~~~js
+var MyClass = Proteus.Class.derive({
+        self: {
+            // Static properties for 'MyClass'
+            myStaticMethod: function () {
+                return true;
+            }
+        },
+        // All other properties are put on the prototype
+        instancePropA: "somevalue"
+    });
+    
+MyClass.myStaticMethod(); // => true
+(new MyClass()).instancePropA === "somevalue"; // => true
+~~~
+
+#### The Inherited Event
+
+When one class is derived from another, and the superclass possesses a function property named `inherited`, the function will be called and passed the newly created *Constructor* function (i.e: the new subclass).
+
+~~~js
+var MyBaseClass = Proteus.Class.derive({
+        self: {
+            inherited: function (subclass) {
+                subclass.superParent = "MyBaseClass";
+            }
+        }
+    }),
+    MySubClass = MyBaseClass.derive({/* ... */})
+;
+
+MySubClass.superParent === "MyBaseClass"; // => true
+~~~
+
+### *ProteusClass*.\_\_super\_\_ Property
+
+Every class derived from Proteus.Class has a `__super__` property that points to its super class' prototype.
+
+~~~js
+var MyBaseClass = Proteus.Class.derive({
+        someMethod: function () {
+            // ...
+        }
+    }),
+    MySubClass = MyBaseClass.derive({
+        someMethod: function () {
+            MySubClass.__super__.someMethod.call(this);
+        }
+    })
+;
+~~~
+
+### Including Instance Functionality
+
+**_ProteusClass_.include(obj1, ..., objN)**
+
+You can mix-in functionality from other *Constructor* function prototype's, or plain objects, into Proteus derived classes with the `include` method.
+
+If passed a *Constructor* function, Proteus will copy the function's prototype properties to your Class' prototype. If passed a plain object, it will copy over those properties to the prototype of the class.
+
+~~~js
+// Copy 'OtherClass' prototype properties to 'MyClass' prototype.
+MyClass.include(OtherClass);
+
+// Merge the passed object into 'MyClass'
+MyClass.include({
+    // Additional properties for MyClass.prototype
+});
+~~~
+
+#### The Included Event
+
+When an object, or *Constructor* function, is included into a Proteus Class its `included` function will be called and given the object that it was included into (the Proteus Class *Constructor*).
+
+~~~js
+var MyModule = Proteus.Class.derive({
+        self: {
+            decorators: [],
+            included: function (includee) {
+                includee.decorators = this.decorators.slice();
+            }
+        }
+    }),
+    MyClass = Proteus.Class.derive({/* ... */})
+;
+
+MyClass.include(MyModule);
+MyClass.decorators; // => []
+~~~
+
+#### Extending Your Class
+
+**_ProteusClass_.extend(obj)**
+
+You can use a *ProteusClass's* `extend` method to extend another object with its functionality.
+
+~~~js
+var MyClass = Proteus.class.derive({
+        self: {
+            someMethod: function () {
+                // ...
+            }
+        }
+    });
+    
+// elsewhere
+MyClass.extend(obj);
+typeof MyClass.someMethod; // => "function"
+~~~
+
+#### The Extended Event
+
+### Instantiation
 

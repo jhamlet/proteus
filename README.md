@@ -14,9 +14,10 @@ Declaratively define JavaScript objects and constructor functions (A.K.A. "Class
 Overview
 --------
 
+**Proteus** is a little library of utility functions that I put together to help manage creating objects and implementing classical inheritance in JavaScript flavors 1.8+.
 
-Object Creation and Extension Methods
--------------------------------------
+Object Creation and Modification
+--------------------------------
 
 ### Proteus.create(proto, props)
 

@@ -18,5 +18,8 @@
     "repository": {
         "type": "git",
         "url": "git://github.com/jhamlet/proteus.git"
+    },
+    "scripts": {
+        "test": "expresso ./test/*"
     }
 }

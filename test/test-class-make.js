@@ -1,10 +1,11 @@
 
 var should = require("should"),
-    Proteus = require("../lib/proteus")
+    Proteus = require("proteus")
 ;
 
-module.exports = {
-    "make an instance": function () {
+suite("Class make method", function () {
+
+    test("make an instance", function () {
         var BaseClass = Proteus.Class.derive({
                 init: function (x) {
                     this.x = x;
@@ -21,6 +22,6 @@ module.exports = {
         (instance instanceof BaseClass).should.eql(true);
         
         instance.x.should.eql(10);
-    },
+    });
     
-};
+});

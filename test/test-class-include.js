@@ -1,6 +1,6 @@
 
 var should = require("should"),
-    Proteus = require("../lib/proteus"),
+    Proteus = require("proteus"),
     BaseClass = Proteus.Class.derive({
         foo: "foo"
     }),
@@ -13,9 +13,9 @@ var should = require("should"),
     })
 ;
 
-module.exports = {
-    
-    "Include other class": function () {
+suite("Class Includes", function () {
+
+    test("Include other class", function () {
         var MyClass = Proteus.Class.derive({
                 buz: "buz"
             }),
@@ -28,9 +28,9 @@ module.exports = {
         
         instance.foo.should.eql("foo");
         instance.baz.should.eql("baz");
-    },
+    });
     
-    "Include into self": function () {
+    test("Include into self", function () {
         BaseClass.include({
             self: {
                 fiz: "fiz"
@@ -38,6 +38,6 @@ module.exports = {
         });
         
         BaseClass.fiz.should.eql("fiz");
-    }
+    });
     
-};
+});

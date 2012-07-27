@@ -1,6 +1,6 @@
 
 var should = require("should"),
-    Proteus = require("../lib/proteus"),
+    Proteus = require("proteus"),
     BaseClass = Proteus.Class.derive({
         foo: "foo"
     }),
@@ -13,9 +13,9 @@ var should = require("should"),
     })
 ;
 
-module.exports = {
-    
-    "Extend with other class": function () {
+suite("Class Extending", function () {
+
+    test("Extend with other class", function () {
         var MyClass = Proteus.Class.derive({
                 buz: "buz"
             });
@@ -23,14 +23,14 @@ module.exports = {
         OtherClass.extend(MyClass);
         
         MyClass.fuz.should.eql("fuz");
-    },
+    });
     
-    "Extend with object": function () {
+    test("Extend with object", function () {
         Proteus.extend(BaseClass, {
             bug: "bug"
         });
         
         BaseClass.bug.should.eql("bug");
-    }
+    });
     
-};
+});

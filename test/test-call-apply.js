@@ -1,12 +1,12 @@
 
 var should = require("should"),
-    Proteus = require("../lib/proteus"),
+    Proteus = require("proteus"),
     objA, objB, objC
 ;
 
-module.exports = {
+suite("Call and Apply along Prototype", function () {
     
-    "Apply next prototype method": function () {
+    test("Apply next prototype method", function () {
         objA = Proteus.create({
             init: function () {
                 this.objAInited = true;
@@ -32,9 +32,9 @@ module.exports = {
         objC.objCInited.should.eql(true);
         objC.objBInited.should.eql(true);
         objC.objAInited.should.eql(true);
-    },
+    });
 
-    "Call next prototype method": function () {
+    test("Call next prototype method", function () {
         objA = Proteus.create({
             init: function () {
                 this.objAInited = true;
@@ -60,9 +60,9 @@ module.exports = {
         objC.objCInited.should.eql(true);
         objC.objBInited.should.eql(true);
         objC.objAInited.should.eql(true);
-    },
+    });
     
-    "Using named methods": function () {
+    test("Using named methods", function () {
         objA = Proteus.create({
             init: function init () {
                 this.objAInited = true;
@@ -88,9 +88,9 @@ module.exports = {
         objC.objCInited.should.eql(true);
         objC.objBInited.should.eql(true);
         objC.objAInited.should.eql(true);
-    },
+    });
     
-    "Skipping a prototype": function () {
+    test("Skipping a prototype", function () {
         objA = Proteus.create({
             init: function init () {
                 this.objAInited = true;
@@ -110,6 +110,6 @@ module.exports = {
         
         objC.objCInited.should.eql(true);
         objC.objAInited.should.eql(true);
-    }
+    });
     
-};
+});

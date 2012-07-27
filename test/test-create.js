@@ -1,17 +1,17 @@
 
 var should = require("should"),
-    Proteus = require("../lib/proteus"),
+    Proteus = require("proteus"),
     objA, objB, objC
 ;
 
-module.exports = {
+suite("Object Create", function () {
 
-    "Loaded": function () {
+    test("Loaded", function () {
         should.exist(Proteus);
         Proteus.should.be.a("object");
-    },
+    });
     
-    "Create an object and add some properties": function () {
+    test("Create an object and add some properties", function () {
         objA = Proteus.create({
             init: function () {
                 this.objA = true;
@@ -27,7 +27,7 @@ module.exports = {
         });
         Proteus.defineGetter(objA, "bar", function () { return this._bar; });
         Proteus.defineSetter(objA, "bar", function (v) { this._bar = v; });
-
+        
         Proteus.defineProperty(objA, "_fiz", "fiz", {
             enumerable: false
         });
@@ -51,9 +51,9 @@ module.exports = {
         
         objA.bar.should.eql("boo");
         objA.fiz.should.eql("fug");
-    },
+    });
     
-    "Extend an object": function () {
+    test("Extend an object", function () {
         objB = Proteus.create(objA, {
             init: function () {
                 this.objB = true;
@@ -71,9 +71,9 @@ module.exports = {
         objB.fiz.should.eql("fug");
         objB.objA.should.eql(true);
         objB.objB.should.eql(true);
-    },
+    });
     
-    "Calling the objects overriden prototype method": function () {
+    test("Calling the objects overriden prototype method", function () {
         objC = Proteus.create(objB, {
             init: function () {
                 this.objC = true;
@@ -86,6 +86,6 @@ module.exports = {
         objC.objA.should.eql(true);
         objC.objB.should.eql(true);
         objC.objC.should.eql(true);
-    }
+    });
     
-};
+});

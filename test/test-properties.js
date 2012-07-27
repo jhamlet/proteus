@@ -1,10 +1,10 @@
 var should = require("should"),
-    Proteus = require("../lib/proteus")
+    Proteus = require("proteus")
 ;
 
-module.exports = {
+suite("Properties", function () {
     
-    "getPropertyNames": function () {
+    test("getPropertyNames", function () {
         var baseObj = {
                 foo: "foo"
             },
@@ -25,9 +25,10 @@ module.exports = {
         
         props = Proteus.getPropertyNames(obj3);
         
-        props.should.contain("foo");
-        props.should.contain("baz");
-        props.should.contain("bar");
-        props.should.not.contain("cho");
-    }
-};
+        props.should.include("foo");
+        props.should.include("baz");
+        props.should.include("bar");
+        props.should.not.include("cho");
+    });
+
+});

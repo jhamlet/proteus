@@ -27,9 +27,11 @@ suite("Class Extending", function () {
     
     test("Extend with object", function () {
         Proteus.extend(BaseClass, {
+            name: "howdy",
             bug: "bug"
         });
         
+        BaseClass.name.should.not.eql("howdy");
         BaseClass.bug.should.eql("bug");
     });
     

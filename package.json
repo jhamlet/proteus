@@ -1,7 +1,7 @@
 {   
     "name": "proteus",
     "description": "A declarative way of creating objects, properties, and classes in ES5 JavaScript",
-    "version": "0.1.1",
+    "version": "0.1.3",
     "keywords": ["ooo", "class", "object", "properties", "utility"],
     "main": "./node_modules/proteus/index.js",
     "devDependencies": {
